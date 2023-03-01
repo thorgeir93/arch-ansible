@@ -1,0 +1,17 @@
+---
+- name: Install notify system on Arch Linux
+  hosts: localhost
+  become_method: sudo
+  become: true
+
+  tasks:
+    - name: Install notify system packages
+      pacman:
+        name:
+          - libnotify
+          - notification-daemon
+        state: present
+
+    - name: Reload systemd after package installation
+      systemd:
+        daemon_reload: yes

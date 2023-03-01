@@ -1,0 +1,61 @@
+---
+- name: Install Scrot and enable screenshot feature
+  hosts: localhost
+  become_method: sudo
+
+  vars:
+    ansible_user: thorgeir
+    screenshot_dir: ~/media/screenshots
+    screenshot_bin: ~/bin/screenshot
+    qtile_config: ~/.config/qtile/config.py
+    scrot_install_packages:
+      - scrot
+      - xclip
+      - libnotify
+
+  tasks:
+    - name: Install Scrot
+      become: true
+      pacman:
+        name: "{{ scrot_install_packages }}"
+        state: present
+
+    - name: Create screenshot bin directory
+      file:
+        path: "{{ screenshot_bin }}"
+        state: directory
+
+    - name: Create screenshot bin directory
+      file:
+        path: "{{ screenshot_bin }}"
+        state: directory
+
+    - name: Create screenshots directory
+      file:
+        path: "{{ screenshot_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Set up keyboard shortcut for screenshot
+      copy:
+        content: |
+          #!/bin/bash
+          scrot -s -e 'xclip -selection clipboard -target image/png -i $f; notify-send -i camera-symbolic "Screenshot taken!" "The screenshot has been saved to {{ screenshot_dir }}"' {{ screenshot_dir }}/$(date +'%Y%m%d-%H%M%S').png
+        dest: "{{ screenshot_bin }}/screenshot"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Set up keyboard shortcut for saving screenshot to file
+      lineinfile:
+        path: "{{ qtile_config }}"
+        line: "Key([], \"Print\", lazy.function(lambda qtile: qtile.cmd_spawn({{ screenshot_bin }})))"
+        insertafter: 'Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal")'
+      notify: Reload Qtile config
+
+  handlers:
+    - name: Reload Qtile config
+      command: "qtile cmd-obj -o cmd -f restart"
+

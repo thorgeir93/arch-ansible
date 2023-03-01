@@ -1,0 +1,30 @@
+---
+- name: Configure screen brightness controls in Qtile
+  hosts: localhost
+
+  vars:
+    qtile_config: "~/.config/qtile/config.py"
+
+  tasks:
+    - name: Install light package
+      pacman:
+        name: light
+        state: present
+
+    - name: Add key bindings for screen brightness
+      lineinfile:
+        path: "{{ qtile_config }}"
+        line: Key([], {{ item.key }}, lazy.spawn({{ item.action }}))
+        insertafter: keys = \[
+      with_items:
+        - { key: 'XF86MonBrightnessUp', action: 'light -A 10'}
+        - { key: 'XF86MonBrightnessDown', action: 'light -U 10'}
+
+      notify: Reload Qtile config
+        #path: "{{ qtile_config }}"
+        #line: 'Key([], "XF86MonBrightnessUp", lazy.spawn("light -A 10"))'
+        #insertafter: 'keys = ['
+
+  handlers:
+    - name: Reload Qtile config
+      command: "qtile cmd-obj -o cmd -f restart"
