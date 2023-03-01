@@ -1,0 +1,44 @@
+---
+- name: Install Vim Pathogen
+  hosts: localhost
+
+  vars:
+    vim_pathogen_dir: ~/.vim/autoload
+    vim_bundle_dir: ~/.vim/bundle
+    pathogen_url: https://tpo.pe/pathogen.vim
+    vim_plugins:
+      - { name: 'nerdtree', repo: 'https://github.com/scrooloose/nerdtree.git', version: 'master' }
+      - { name: 'vim-airline', repo: 'https://github.com/vim-airline/vim-airline.git', version: 'master' }
+      - { name: 'jedi-vim', repo: 'https://github.com/davidhalter/jedi-vim.git', version: 'master' }
+      - { name: 'vim-python-pep8-indent', repo: 'https://github.com/hynek/vim-python-pep8-indent.git', version: 'master' }
+      - { name: 'vim-autopep8', repo: 'https://github.com/tell-k/vim-autopep8.git', version: 'master' }
+      - { name: 'vim-flake8', repo: 'https://github.com/nvie/vim-flake8.git', version: 'master' }
+      - { name: 'vim-test', repo: 'https://github.com/janko/vim-test.git', version: 'master' }
+      - { name: 'vim-surround', repo: 'https://github.com/tpope/vim-surround.git', version: 'master' }
+
+
+  tasks:
+    - name: Create Pathogen directory
+      file:
+        path: "{{ vim_pathogen_dir }}"
+        state: directory
+
+    - name: Download Pathogen
+      get_url:
+        url: "{{ pathogen_url }}"
+        dest: "{{ vim_pathogen_dir }}/pathogen.vim"
+
+    - name: Create Bundle directory
+      file:
+        path: "{{ vim_bundle_dir }}"
+        state: directory
+
+    - name: Install Vim plugins
+      git:
+        repo: "{{ item.repo }}"
+        dest: "{{ vim_bundle_dir }}/{{ item.name }}"
+        version: "{{ item.version }}"
+        clone: yes
+      with_items: "{{ vim_plugins }}"
+        # Add more plugins as needed
+
