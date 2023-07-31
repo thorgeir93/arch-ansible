@@ -1,0 +1,44 @@
+---
+- name: Setup Environment
+  hosts: localhost
+  become_method: sudo
+
+  tasks:
+    - name: Change ownership of ~/git/hub directory
+      become: true
+      file:
+        path: ~/git/hub/
+        owner: thorgeir
+        group: thorgeir
+        recurse: yes
+
+    - name: Clone dotfiles repository
+      git:
+        repo: https://github.com/thorgeir93/dotfiles.git
+        dest: ~/git/hub/thorgeir/dotfiles
+        force: yes
+
+    - name: Remove existing i3 config directory
+      file:
+        path: ~/.config/i3
+        state: absent
+
+    - name: Clone i3wm-config-thorgeir repository
+      git:
+        repo: https://github.com/thorgeir93/i3wm-config-thorgeir
+        dest: ~/git/hub/thorgeir/i3wm-config-thorgeir
+        force: yes
+
+    - name: Link config files
+      file:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        state: link
+      loop:
+        - { src: ~/git/hub/thorgeir/dotfiles/.bashrc, dest: ~/.bashrc }
+        - { src: ~/git/hub/thorgeir/dotfiles/.vimrc, dest: ~/.vimrc }
+        - { src: ~/git/hub/thorgeir/dotfiles/.Xdefaults, dest: ~/.Xdefaults }
+        - { src: ~/git/hub/thorgeir/dotfiles/.tmux.conf, dest: ~/.tmux.conf }
+        - { src: ~/git/hub/thorgeir/dotfiles/.aliases, dest: ~/.aliases }
+        - { src: ~/git/hub/thorgeir/dotfiles/.speedswapper, dest: ~/.speedswapper }
+        - { src: ~/git/hub/thorgeir/i3wm-config-thorgeir, dest: ~/.config/i3 }

@@ -12,6 +12,11 @@
       - scrot
       - xclip
       - libnotify
+    script_content: |
+      #!/bin/bash
+      TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+      FILENAME={{ screenshot_dir }}/${TIMESTAMP}.png
+      scrot -s -e 'xclip -selection clipboard -target image/png -i $f; notify-send -i camera-symbolic "Screenshot taken!" "The screenshot has been saved to {{ screenshot_dir }}"' $FILENAME
 
   tasks:
     - name: Install Scrot
@@ -25,10 +30,10 @@
         path: "{{ screenshot_bin }}"
         state: directory
 
-    - name: Create screenshot bin directory
-      file:
-        path: "{{ screenshot_bin }}"
-        state: directory
+    #- name: Create screenshot bin directory
+    #  file:
+    #    path: "{{ screenshot_bin }}"
+    #    state: directory
 
     - name: Create screenshots directory
       file:
@@ -38,24 +43,35 @@
         group: "{{ ansible_user }}"
         mode: '0755'
 
-    - name: Set up keyboard shortcut for screenshot
+#    - name: Set up keyboard shortcut for screenshot
+#      copy:
+#        content: |
+#          #!/bin/bash
+#          scrot -s -e 'xclip -selection clipboard -target image/png -i $f; notify-send -i camera-symbolic "Screenshot taken!" "The screenshot has been saved to {{ screenshot_dir }}"' {{ screenshot_dir }}/$(date +'%Y%m%d-%H%M%S').png
+#        dest: "{{ screenshot_bin }}/screenshot"
+#        owner: "{{ ansible_user }}"
+#        group: "{{ ansible_user }}"
+#        mode: '0755'
+
+    - name: Create screenshot script
       copy:
-        content: |
-          #!/bin/bash
-          scrot -s -e 'xclip -selection clipboard -target image/png -i $f; notify-send -i camera-symbolic "Screenshot taken!" "The screenshot has been saved to {{ screenshot_dir }}"' {{ screenshot_dir }}/$(date +'%Y%m%d-%H%M%S').png
+        content: "{{ script_content }}"
         dest: "{{ screenshot_bin }}/screenshot"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: '0755'
 
-    - name: Set up keyboard shortcut for saving screenshot to file
-      lineinfile:
-        path: "{{ qtile_config }}"
-        line: "Key([], \"Print\", lazy.function(lambda qtile: qtile.cmd_spawn({{ screenshot_bin }})))"
-        insertafter: 'Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal")'
-      notify: Reload Qtile config
 
-  handlers:
-    - name: Reload Qtile config
-      command: "qtile cmd-obj -o cmd -f restart"
+
+
+    # - name: Set up keyboard shortcut for saving screenshot to file
+    #   lineinfile:
+    #     path: "{{ qtile_config }}"
+    #     line: "Key([], \"Print\", lazy.function(lambda qtile: qtile.cmd_spawn({{ screenshot_bin }})))"
+    #     insertafter: 'Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal")'
+    #   notify: Reload Qtile config
+
+  #handlers:
+  #  - name: Reload Qtile config
+  #    command: "qtile cmd-obj -o cmd -f restart"
 

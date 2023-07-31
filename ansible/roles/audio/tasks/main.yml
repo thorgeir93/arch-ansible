@@ -1,0 +1,29 @@
+---
+# Installation guide:
+# * https://github.com/mikeroyal/PipeWire-Guide#installing-pipewire-on-arch-linux
+- name: Install PipeWire on Arch Linux
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install PipeWire and dependencies
+      pacman:
+        name:
+          - pipewire
+          - pipewire-alsa
+          - pipewire-pulse
+          - pipewire-jack
+          - wireplumber
+        state: present
+
+    - name: Enable PipeWire sockets and session manager
+      # U
+      systemd:
+        name: "{{ item }}"
+        state: started
+        scope: user
+        enabled: yes
+      loop:
+        - pipewire.socket
+        - pipewire-pulse.socket
+        - wireplumber.service

@@ -1,0 +1,23 @@
+---
+# Created to fix the audio.
+# Credit: https://bbs.archlinux.org/viewtopic.php?pid=1933643#p1933643
+
+- name: Fix audio in Arch
+  become: yes
+
+  tasks:
+    - name: Install package sof-firmware
+      pacman:
+        name: sof-firmware
+        state: present
+
+    - name: Install package alsa-ucm-conf
+      pacman:
+        name: alsa-ucm-conf
+        state: present
+
+	copy:
+	  dest: /etc/modprobe.d/alsa-base.conf
+	  content: |
+		options snd-hda-intel model=auto
+		options snd-intel-dspcfg dsp_driver=1 
