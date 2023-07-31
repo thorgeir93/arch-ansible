@@ -10,6 +10,7 @@
         name:
           - libnotify
           - notification-daemon
+          - dunst
         state: present
 
     - name: Reload systemd after package installation

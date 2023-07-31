@@ -1,0 +1,69 @@
+---
+- name: Install Audio/Mic
+  hosts: localhost
+  become_method: sudo
+  become: true
+
+  tasks:
+    - name: Install ALSA and PulseAudio
+      pacman:
+        name:
+          - alsa-utils
+          - pulseaudio
+          - pavucontrol
+        state: present
+
+    - name: Install Microphone Tools
+      pacman:
+        name:
+          - pulseaudio-alsa
+          - pulseaudio-jack
+          - pulsemixer
+        state: present
+
+    - name: Configure ALSA
+      copy:
+        dest: /etc/asound.conf
+        content: |
+          # Set the default device to the ALSA device
+          pcm.!default {
+            type hw
+            card 0
+          }
+          ctl.!default {
+            type hw
+            card 0
+          }
+
+    - name: Start and Enable ALSA Service
+      systemd:
+        name: alsa-state.service
+        enabled: true
+        state: started
+
+    - name: Start and Enable PulseAudio Service
+      become: false
+      systemd:
+        name: pulseaudio.service
+        scope: user
+        enabled: true
+        state: started
+
+    - name: Configure PulseAudio
+      lineinfile:
+        path: /etc/pulse/default.pa
+        line: 'load-module module-alsa-sink device=hw:0'
+      notify: restart pulseaudio
+
+    - name: Configure Microphone Input
+      lineinfile:
+        path: /etc/pulse/default.pa
+        line: 'load-module module-alsa-source device=hw:1'
+      notify: restart pulseaudio
+
+  handlers:
+    - name: restart pulseaudio
+      become: false
+      systemd:
+        name: pulseaudio.service
+        state: restarted

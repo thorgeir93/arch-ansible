@@ -1,0 +1,57 @@
+---
+- name: Install Noto Emoji font and configure fontconfig
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install noto-fonts-emoji package
+      pacman:
+        name: noto-fonts-emoji
+        state: present
+
+    - name: Add font config to /etc/fonts/conf.d/01-notosans.conf
+      copy:
+        dest: /etc/fonts/conf.d/01-notosans.conf
+        content: |
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig PUBLIC "-//Fontconfig//DTD Font Configuration 2.0//EN" "fonts.dtd">
+          <fontconfig>
+            <alias>
+              <family>sans-serif</family>
+              <prefer>
+                <family>Noto Sans</family>
+                <family>Noto Color Emoji</family>
+                <family>Noto Emoji</family>
+                <family>DejaVu Sans</family>
+              </prefer>
+            </alias>
+
+            <alias>
+              <family>serif</family>
+              <prefer>
+                <family>Noto Serif</family>
+                <family>Noto Color Emoji</family>
+                <family>Noto Emoji</family>
+                <family>DejaVu Serif</family>
+              </prefer>
+            </alias>
+
+            <alias>
+              <family>monospace</family>
+              <prefer>
+                <family>Noto Mono</family>
+                <family>Noto Color Emoji</family>
+                <family>Noto Emoji</family>
+                <family>DejaVu Sans Mono</family>
+              </prefer>
+            </alias>
+          </fontconfig>
+
+    - name: Update font cache
+      command: fc-cache
+
+    - name: Display message
+      debug:
+        msg: |
+          Noto Emoji Font installed! You may need to restart applications like chrome. If chrome displays no symbols or no letters, your default font contains emojis.
+          Consider inconsolata regular

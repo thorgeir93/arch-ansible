@@ -1,0 +1,16 @@
+---
+- name: Install urxvt
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install rxvt-unicode package
+      pacman:
+        name: rxvt-unicode
+        state: present
+
+  tasks:
+    - name: Install bash-completion package
+      pacman:
+        name: bash-completion
+        state: present

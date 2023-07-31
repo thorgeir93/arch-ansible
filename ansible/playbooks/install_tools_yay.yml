@@ -1,0 +1,22 @@
+---
+- name: Install tools for Arch using YAY
+  hosts: localhost
+  become: no
+
+  vars:
+    ansible_user: thorgeir
+
+  tasks:
+    - name: Install packages using yay
+      command: "yay -S {{ name }} --noconfirm"
+      loop:
+        - urxvt-resize-font-git
+        - tmux-plugin-manager
+        - maim
+        - ttf-symbola
+
+
+# Explain why I need those packages:
+# ----------------------------------
+# maim - Screenshot utility, used by [.config/i3/config]
+# ttf-symbola - Enables strange symbols in Urxvt terminal [~/.Xdefaults]
