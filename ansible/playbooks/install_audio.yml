@@ -1,0 +1,48 @@
+---
+- name: Install and set up audio on Arch Linux
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Install audio packages
+      pacman:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - alsa-utils
+        - pulseaudio
+        - pavucontrol
+
+    - name: Start and enable ALSA service
+      systemd:
+        name: alsa-restore.service
+        state: started
+        enabled: true
+
+    - name: Ensure D-Bus message bus is running
+      ansible.builtin.systemd:
+        name: dbus.service
+        state: started
+        enabled: yes
+
+	# For some reason I got error:
+	# * "/usr/bin/systemctl --user", "msg": "Failed to connect to bus: No such file or directory"
+	# Ansible version: 2.14.3
+    - name: Start and enable PulseAudio service
+      ansible.builtin.systemd:
+        name: pulseaudio.service
+        scope: user
+        state: started
+        enabled: true
+
+	# NOT SURE if this is needed.
+    #- name: Configure PulseAudio for user
+    #  copy:
+    #    src: pulseaudio-client.conf
+    #    dest: "~/.config/pulse/client.conf"
+    #    owner: "{{ ansible_user }}"
+    #    group: "{{ ansible_user }}"
+    #    mode: '0644'
+
+    - name: Reload PulseAudio configuration
+      command: pulseaudio --kill && pulseaudio --start
