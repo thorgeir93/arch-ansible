@@ -1,18 +1,22 @@
 ---
-- name: Install base-devel package group
-  pacman:
-    name: base-devel
-    state: present
+- name: Install Yay
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Install base-devel package group
+      pacman:
+        name: base-devel
+        state: present
 
-- name: Install yay AUR helper
-  become: true
-  git:
-    repo: https://aur.archlinux.org/yay.git
-    dest: /opt/yay-git
-  register: git_clone
+    - name: Install yay AUR helper
+      become: true
+      git:
+        repo: https://aur.archlinux.org/yay.git
+        dest: /opt/yay-git
+      register: git_clone
 
-- name: Build and install yay AUR helper
-  become: true
-  command: makepkg -si
-  args:
-    chdir: "{{ git_clone.dest }}"
+    - name: Build and install yay AUR helper
+      become: true
+      command: makepkg -si
+      args:
+        chdir: "{{ git_clone.dest }}"
