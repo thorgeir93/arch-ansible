@@ -1,69 +1,48 @@
 ---
-- name: Install Audio/Mic
+- name: Install and set up audio on Arch Linux
   hosts: localhost
-  become_method: sudo
   become: true
 
   tasks:
-    - name: Install ALSA and PulseAudio
+    - name: Install audio packages
       pacman:
-        name:
-          - alsa-utils
-          - pulseaudio
-          - pavucontrol
+        name: "{{ item }}"
         state: present
+      with_items:
+        - alsa-utils
+        - pulseaudio
+        - pavucontrol
 
-    - name: Install Microphone Tools
-      pacman:
-        name:
-          - pulseaudio-alsa
-          - pulseaudio-jack
-          - pulsemixer
-        state: present
-
-    - name: Configure ALSA
-      copy:
-        dest: /etc/asound.conf
-        content: |
-          # Set the default device to the ALSA device
-          pcm.!default {
-            type hw
-            card 0
-          }
-          ctl.!default {
-            type hw
-            card 0
-          }
-
-    - name: Start and Enable ALSA Service
+    - name: Start and enable ALSA service
       systemd:
-        name: alsa-state.service
-        enabled: true
+        name: alsa-restore.service
         state: started
+        enabled: true
 
-    - name: Start and Enable PulseAudio Service
-      become: false
-      systemd:
+    - name: Ensure D-Bus message bus is running
+      ansible.builtin.systemd:
+        name: dbus.service
+        state: started
+        enabled: yes
+
+	# For some reason I got error:
+	# * "/usr/bin/systemctl --user", "msg": "Failed to connect to bus: No such file or directory"
+	# Ansible version: 2.14.3
+    - name: Start and enable PulseAudio service
+      ansible.builtin.systemd:
         name: pulseaudio.service
         scope: user
-        enabled: true
         state: started
+        enabled: true
 
-    - name: Configure PulseAudio
-      lineinfile:
-        path: /etc/pulse/default.pa
-        line: 'load-module module-alsa-sink device=hw:0'
-      notify: restart pulseaudio
+	# NOT SURE if this is needed.
+    #- name: Configure PulseAudio for user
+    #  copy:
+    #    src: pulseaudio-client.conf
+    #    dest: "~/.config/pulse/client.conf"
+    #    owner: "{{ ansible_user }}"
+    #    group: "{{ ansible_user }}"
+    #    mode: '0644'
 
-    - name: Configure Microphone Input
-      lineinfile:
-        path: /etc/pulse/default.pa
-        line: 'load-module module-alsa-source device=hw:1'
-      notify: restart pulseaudio
-
-  handlers:
-    - name: restart pulseaudio
-      become: false
-      systemd:
-        name: pulseaudio.service
-        state: restarted
+    - name: Reload PulseAudio configuration
+      command: pulseaudio --kill && pulseaudio --start
