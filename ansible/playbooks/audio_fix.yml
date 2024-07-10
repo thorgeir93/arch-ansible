@@ -1,8 +1,6 @@
 ---
-# Created to fix the audio.
-# Credit: https://bbs.archlinux.org/viewtopic.php?pid=1933643#p1933643
-
 - name: Fix audio in Arch
+  hosts: localhost
   become: yes
 
   tasks:
@@ -16,8 +14,13 @@
         name: alsa-ucm-conf
         state: present
 
-	copy:
-	  dest: /etc/modprobe.d/alsa-base.conf
-	  content: |
-		options snd-hda-intel model=auto
-		options snd-intel-dspcfg dsp_driver=1 
+    - name: Update alsa-base.conf
+      copy:
+        dest: /etc/modprobe.d/alsa-base.conf
+        content: |
+          options snd-hda-intel model=auto
+          options snd-intel-dspcfg dsp_driver=1
+
+# Created to fix the audio.
+# Credit: https://bbs.archlinux.org/viewtopic.php?pid=1933643#p1933643
+

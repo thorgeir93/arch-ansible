@@ -38,8 +38,17 @@
             - tree
             - tk
             - rsync
+            - fzf
         state: present
     # tk: for $ pyenv install 3.10.10
+
+    - name: Install i3 screenshot requried package
+      pacman:
+        name:
+            - xdotool
+            - maim
+        state: present
+
 
     - name: Add user to video group
       user:

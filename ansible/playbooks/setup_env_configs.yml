@@ -23,10 +23,21 @@
         path: ~/.config/i3
         state: absent
 
+    - name: Remove existing .bashrc config
+      file:
+        path: ~/.bashrc
+        state: absent
+
     - name: Clone i3wm-config-thorgeir repository
       git:
         repo: https://github.com/thorgeir93/i3wm-config-thorgeir
         dest: ~/git/hub/thorgeir/i3wm-config-thorgeir
+        force: yes
+
+    - name: Clone background repository
+      git:
+        repo: https://github.com/thorgeir93/wallpapers
+        dest: ~/git/hub/thorgeir/wallpapers
         force: yes
 
     - name: Link config files

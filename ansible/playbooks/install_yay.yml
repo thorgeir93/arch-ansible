@@ -1,18 +1,22 @@
 ---
-- name: Install base-devel package group
-  pacman:
-    name: base-devel
-    state: present
-
-- name: Install yay AUR helper
+- name: Install and set up audio on Arch Linux
+  hosts: localhost
   become: true
-  git:
-    repo: https://aur.archlinux.org/yay.git
-    dest: /opt/yay-git
-  register: git_clone
 
-- name: Build and install yay AUR helper
-  become: true
-  command: makepkg -si
-  args:
-    chdir: "{{ git_clone.dest }}"
+  tasks:
+    - name: Install base-devel package group
+      pacman:
+        name: base-devel
+        state: present
+
+    - name: Install yay AUR helper
+      become: true
+      git:
+        repo: https://aur.archlinux.org/yay.git
+        dest: /opt/yay-git
+
+    - name: Build and install yay AUR helper
+      become: true
+      command: makepkg -si
+      args:
+        dest: /opt/yay-git

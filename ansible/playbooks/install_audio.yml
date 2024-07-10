@@ -25,9 +25,9 @@
         state: started
         enabled: yes
 
-	# For some reason I got error:
-	# * "/usr/bin/systemctl --user", "msg": "Failed to connect to bus: No such file or directory"
-	# Ansible version: 2.14.3
+     # For some reason I got error:
+     # * "/usr/bin/systemctl --user", "msg": "Failed to connect to bus: No such file or directory"
+     # Ansible version: 2.14.3
     - name: Start and enable PulseAudio service
       ansible.builtin.systemd:
         name: pulseaudio.service
@@ -35,7 +35,7 @@
         state: started
         enabled: true
 
-	# NOT SURE if this is needed.
+    # NOT SURE if this is needed.
     #- name: Configure PulseAudio for user
     #  copy:
     #    src: pulseaudio-client.conf
